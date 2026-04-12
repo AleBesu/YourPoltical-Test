@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:your_political_test/UI/provider/user_name_provider.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/app/theme/app_colors.dart';
 
 /// Modelo de datos para pasar al widget desde fuera
 class PoliticalResult {
-  final double economicScore; // -1.0 (izquierda) a 1.0 (derecha)
-  final double authorityScore; // -1.0 (liberal) a 1.0 (totalitario)
-  final String economicLabel;
-  final String socialLabel;
-  final String compatibilityLabel;
-  final int compatibilityPercent;
-  final String description;
+  final double economicPosition; // -1.0 (izquierda) a 1.0 (derecha)
+  final double economicMaxPosition;
 
+  final double authorityPosition; // -1.0 (liberal) a 1.0 (totalitario)
+  final double authorityMaxPosition;
   const PoliticalResult({
-    required this.economicScore,
-    required this.authorityScore,
-    required this.economicLabel,
-    required this.socialLabel,
-    required this.compatibilityLabel,
-    required this.compatibilityPercent,
-    required this.description,
+    required this.economicPosition,
+    required this.authorityPosition,
+    required this.economicMaxPosition,
+    required this.authorityMaxPosition,
   });
 }
 
@@ -56,7 +52,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
             _buildCompassCard(),
             const SizedBox(height: 16),
             _buildResultCard(),
@@ -97,6 +93,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Widget _buildCompassCard() {
     return Column(
       children: [
+        _buildPoliticiansToggle(),
+        const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.maxWidth * 0.9;
@@ -104,15 +102,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
               width: size,
               height: size,
               child: _PoliticalCompass(
-                economicScore: widget.result.economicScore,
-                authorityScore: widget.result.authorityScore,
+                economicMaxPosition: widget.result.economicMaxPosition,
+                authorityMaxPosition: widget.result.authorityMaxPosition,
+                economicPosition: widget.result.economicPosition,
+                authorityPosition: widget.result.authorityPosition,
                 showPoliticians: _showPoliticians,
               ),
             );
           },
         ),
-        const SizedBox(height: 8),
-        _buildPoliticiansToggle(),
       ],
     );
   }
@@ -138,7 +136,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
   // ─── Tarjeta de resultado ──────────────────────────────────────────────────
 
   Widget _buildResultCard() {
-    final r = widget.result;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -160,24 +157,24 @@ class _ResultsScreenState extends State<ResultsScreen> {
           const SizedBox(height: 16),
           _ResultRow(
             label: 'Orientación Económica',
-            value: r.economicLabel,
+            value: "Centro-Izquierda",
             valueColor: AppColors.textPrimary,
           ),
           const SizedBox(height: 12),
           _ResultRow(
             label: 'Libertades Sociales',
-            value: r.socialLabel,
+            value: "Liberal",
             valueColor: Colors.white,
           ),
           const SizedBox(height: 12),
           _ResultRow(
             label: 'Compatibilidad',
-            value: '${r.compatibilityPercent}% ${r.compatibilityLabel}',
+            value: "85% Progresista",
             valueColor: const Color(0xFF16A34A),
           ),
           const SizedBox(height: 16),
           Text(
-            r.description,
+            "Tu posición indica una tendencia hacia políticas económicas de centro-izquierda con valores sociales liberales. Apoyas la intervención estatal moderada y las libertades individuales.",
             style: const TextStyle(
               fontSize: 13,
               color: AppColors.textPrimary,
@@ -241,20 +238,25 @@ class _ResultsScreenState extends State<ResultsScreen> {
 class _PoliticalCompass extends StatelessWidget {
   /// economicScore: -1.0 = izquierda extrema · 1.0 = derecha extrema
   /// authorityScore: -1.0 = liberal extremo · 1.0 = totalitario extremo
-  final double economicScore;
-  final double authorityScore;
+
+  final double economicPosition; // -1.0 (izquierda) a 1.0 (derecha)
+  final double economicMaxPosition;
+
+  final double authorityPosition; // -1.0 (liberal) a 1.0 (totalitario)
+  final double authorityMaxPosition;
   final bool showPoliticians;
 
   const _PoliticalCompass({
-    required this.economicScore,
-    required this.authorityScore,
+    required this.economicPosition,
+    required this.authorityPosition,
     required this.showPoliticians,
+    required this.economicMaxPosition,
+    required this.authorityMaxPosition,
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
-      clipBehavior: Clip.none,
       children: [
         // Cuadrantes
         Container(
@@ -317,22 +319,18 @@ class _PoliticalCompass extends StatelessWidget {
         ),
 
         // Marcador del usuario
-        // LayoutBuilder(
-        //   builder: (context, constraints) {
-        //     // Convertir scores (-1..1) a posición relativa (0..1)
-        //     final xFraction = (economicScore + 1) / 2;
-        //     final yFraction =
-        //         (authorityScore + 1) / 2; // 0 = liberal, 1 = totalitario
-        //     const markerSize = 20.0;
-        //     final left = xFraction * constraints.maxWidth - markerSize / 2;
-        //     final top = yFraction * constraints.maxHeight - markerSize / 2;
-        //     return Positioned(
-        //       left: left.clamp(0, constraints.maxWidth - markerSize),
-        //       top: top.clamp(0, constraints.maxHeight - markerSize),
-        //       child: _UserMarker(size: markerSize),
-        //     );
-        //   },
-        // ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment(
+              (economicPosition / economicMaxPosition),
+              (authorityPosition / authorityMaxPosition) *
+                  -1, // es por -1 ya que en flutter los valores
+              //positivos del eje Y van hacia abajo y yo uso convesionalmente
+              // los valores positivos hacia arriba
+            ),
+            child: _UserMarker(size: 30),
+          ),
+        ),
 
         // Marcadores de políticos (ejemplo hardcodeado; en producción
         // se pasarían como parámetro)
@@ -462,28 +460,33 @@ class _Quadrant extends StatelessWidget {
 
 // ─── Marcador del usuario ──────────────────────────────────────────────────
 
-class _UserMarker extends StatelessWidget {
+class _UserMarker extends ConsumerWidget {
   final double size;
   const _UserMarker({required this.size});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Tooltip(
+      message: ref.watch(userNameProvider),
+      padding: const EdgeInsets.all(2),
+      waitDuration: Duration(),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: Color.fromARGB(255, 9, 0, 133), width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.person, color: Color.fromARGB(255, 9, 0, 133)),
       ),
-      child: const Icon(Icons.person, color: Colors.white, size: 12),
     );
   }
 }
@@ -492,6 +495,7 @@ class _UserMarker extends StatelessWidget {
 
 class _PoliticianMarker extends StatelessWidget {
   final double size;
+
   const _PoliticianMarker({required this.size});
 
   @override
@@ -547,44 +551,6 @@ class _ResultRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ─── Ejemplo de uso ───────────────────────────────────────────────────────
-
-void main() {
-  runApp(const _DemoApp());
-}
-
-class _DemoApp extends StatelessWidget {
-  const _DemoApp();
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3B82F6)),
-        useMaterial3: true,
-      ),
-      home: ResultsScreen(
-        result: const PoliticalResult(
-          economicScore: -0.20, // Centro-izquierda
-          authorityScore: -0.30, // Liberal
-          economicLabel: 'Centro-Izquierda',
-          socialLabel: 'Liberal',
-          compatibilityLabel: 'Progresista',
-          compatibilityPercent: 85,
-          description:
-              'Tu posición indica una tendencia hacia políticas económicas de '
-              'centro-izquierda con valores sociales liberales. Apoyas la '
-              'intervención estatal moderada y las libertades individuales.',
-        ),
-        onBack: () {},
-        onShare: () {},
-        onRepeat: () {},
-      ),
     );
   }
 }

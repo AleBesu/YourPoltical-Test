@@ -322,10 +322,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildStat('15', 'Preguntas'),
+            _buildStat('12', 'Preguntas'),
 
             const SizedBox(width: 20),
-            _buildStat('4', 'Dimensiones'),
+            _buildStat('4', 'Direcciones'),
           ],
         ),
       ],

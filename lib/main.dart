@@ -19,21 +19,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: appTheme,
-      title: 'Material App',
+      title: 'YourPoltical Test',
       debugShowCheckedModeBanner: false,
       home: QuestionScreen(),
-      // home: ResultsScreen(
-      //   result: PoliticalResult(
-      //     economicScore: 20,
-      //     authorityScore: 30,
-      //     economicLabel: "Centro-Izquierda",
-      //     socialLabel: "Liberal",
-      //     compatibilityLabel: "85% Progresista",
-      //     compatibilityPercent: 30,
-      //     description:
-      //         "Tu posición indica una tendencia hacia políticas económicas de centro-izquierda con valores sociales liberales. Apoyas la intervención estatal moderada y las libertades individuales.",
-      //   ),
-      // ),
     );
   }
 }

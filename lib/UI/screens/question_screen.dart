@@ -5,6 +5,7 @@ import 'package:flutter_material_design_icons/flutter_material_design_icons.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:your_political_test/UI/provider/user_position_provider.dart';
+import 'package:your_political_test/UI/screens/results_screen.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/core/const/questions_list.dart';
 import 'package:your_political_test/core/entities/question.dart';
@@ -44,10 +45,49 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    _musicPlayer.dispose();
+    super.dispose();
+  }
+
   Future<void> playMusic() async {
     await _musicPlayer.setAsset("assets/music/game_play_song.mp3");
     await _musicPlayer.setLoopMode(LoopMode.one);
-    await _musicPlayer.play();
+
+    setState(() {
+      _musicPlayer.play();
+    });
+  }
+
+  void addValueToUserPosition() {
+    //add answer value to user co
+    ref.read(userPositionProvider.notifier).update((state) {
+      final currentQuestion = questionsList[currentQuestionIndex];
+      final currentAnswer = _selectedAswersList[currentQuestionIndex]!;
+
+      double addedValue =
+          //multiply the value of the answer by the direction(1 or -1)
+          (currentAnswer.value *
+          currentQuestion.direction.value); // negative -1, 1 positive
+
+      //is the axis is horizontal
+      if (currentQuestion.questionAxis == QuestionAxis.horizontal) {
+        double newX =
+            //
+            state.x + addedValue;
+
+        return Point(newX, state.y);
+      }
+      //if the axis is vertical
+      else {
+        double newY =
+            //
+            state.y + addedValue;
+
+        return Point(state.x, newY);
+      }
+    });
   }
 
   @override
@@ -130,46 +170,19 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
               isFinishQuestion:
                   currentQuestionIndex == questionsList.length - 1,
               enabled: _selectedAswersList[currentQuestionIndex] != null,
+
+              onBack: currentQuestionIndex == 0
+                  ? null
+                  : () async {
+                      await _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
               onConfirm: () async {
-                //add answer value to user co
-                ref.read(userPositionProvider.notifier).update((state) {
-                  final currentQuestion = questionsList[currentQuestionIndex];
-                  final currentAnswer =
-                      _selectedAswersList[currentQuestionIndex]!;
-
-                  double addedValue =
-                      //multiply the value of the answer by the direction(1 or -1)
-                      (currentAnswer.value *
-                      currentQuestion
-                          .direction
-                          .value); // negative -1, 1 positive
-
-                  //is the axis is horizontal
-                  if (currentQuestion.questionAxis == QuestionAxis.horizontal) {
-                    double newX =
-                        //
-                        state.x + addedValue;
-
-                    return Point(newX, state.y);
-                  }
-                  //if the axis is vertical
-                  else {
-                    double newY =
-                        //
-                        state.y + addedValue;
-
-                    return Point(state.x, newY);
-                  }
-                });
-
+                addValueToUserPosition();
                 //next page
                 await _pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-              onBack: () async {
-                await _pageController.previousPage(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 );
@@ -178,11 +191,31 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
               onNext: _selectedAswersList[currentQuestionIndex] == null
                   ? null
                   : () {
+                      addValueToUserPosition();
                       _pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
                       );
                     },
+              onFinish: () {
+                _musicPlayer.pause();
+
+                double economicPosition = ref.read(userPositionProvider).x;
+                double authorityPosition = ref.read(userPositionProvider).y;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ResultsScreen(
+                      result: PoliticalResult(
+                        economicPosition: economicPosition,
+                        authorityPosition: authorityPosition,
+                        economicMaxPosition: 6,
+                        authorityMaxPosition: 6,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -372,9 +405,15 @@ class _Footer extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            OutlinedButton(
-              onPressed: onBack,
-              child: Icon(Icons.arrow_back_ios),
+            Visibility(
+              visible: onBack != null,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: OutlinedButton(
+                onPressed: onBack,
+                child: Icon(Icons.arrow_back_ios),
+              ),
             ),
             SizedBox(width: 8),
 
@@ -382,7 +421,11 @@ class _Footer extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 child: ElevatedButton(
-                  onPressed: enabled ? onConfirm : null,
+                  onPressed: enabled
+                      ? isFinishQuestion
+                            ? onFinish
+                            : onConfirm
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: enabled
                         ? const Color(0xFF3B82F6)
