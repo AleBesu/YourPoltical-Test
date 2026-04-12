@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:your_political_test/UI/screens/main_screen.dart';
 
 import 'package:your_political_test/UI/screens/question_screen.dart';
 
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: appTheme,
       title: 'YourPoltical Test',
       debugShowCheckedModeBanner: false,
-      home: QuestionScreen(),
+      home: MainScreen(),
     );
   }
 }

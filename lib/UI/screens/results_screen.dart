@@ -157,20 +157,71 @@ class _ResultsScreenState extends State<ResultsScreen> {
           const SizedBox(height: 16),
           _ResultRow(
             label: 'Orientación Económica',
-            value: "Centro-Izquierda",
-            valueColor: AppColors.textPrimary,
+            valueChildren: [
+              Text(
+                "Centro-Izquierda",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           _ResultRow(
             label: 'Libertades Sociales',
-            value: "Liberal",
-            valueColor: Colors.white,
+            valueChildren: [
+              Text(
+                "Liberal",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           _ResultRow(
             label: 'Compatibilidad',
-            value: "85% Progresista",
-            valueColor: const Color(0xFF16A34A),
+            valueChildren: [
+              Text(
+                "Izquierda: ${(100 + ((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * 100).toStringAsFixed(2)}%",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.repRed,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Derecha: ${(((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * -100).toStringAsFixed(2)}%",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.repBlue,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Liberal: ${(100 - ((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * -100).toStringAsFixed(2)}%",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.repGreen,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Totalitario: ${(((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * -100).toStringAsFixed(2)}%",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.repOrange,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Text(
@@ -328,7 +379,7 @@ class _PoliticalCompass extends StatelessWidget {
               //positivos del eje Y van hacia abajo y yo uso convesionalmente
               // los valores positivos hacia arriba
             ),
-            child: _UserMarker(size: 30),
+            child: _UserMarker(size: 28),
           ),
         ),
 
@@ -476,7 +527,7 @@ class _UserMarker extends ConsumerWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: Color.fromARGB(255, 9, 0, 133), width: 2),
+          border: Border.all(color: Colors.blueAccent, width: 2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.25),
@@ -485,7 +536,7 @@ class _UserMarker extends ConsumerWidget {
             ),
           ],
         ),
-        child: const Icon(Icons.person, color: Color.fromARGB(255, 9, 0, 133)),
+        child: const Icon(Icons.person, color: AppColors.primaryBlue),
       ),
     );
   }
@@ -524,31 +575,24 @@ class _PoliticianMarker extends StatelessWidget {
 
 class _ResultRow extends StatelessWidget {
   final String label;
-  final String value;
-  final Color valueColor;
+  final List<Widget> valueChildren;
 
-  const _ResultRow({
-    required this.label,
-    required this.value,
-    required this.valueColor,
-  });
+  const _ResultRow({required this.label, required this.valueChildren});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: valueColor,
-          ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: valueChildren,
         ),
       ],
     );
