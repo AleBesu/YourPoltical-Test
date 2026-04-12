@@ -1,59 +1,43 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:your_political_test/UI/provider/user_position_provider.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
+import 'package:your_political_test/core/const/questions_list.dart';
 import 'package:your_political_test/core/entities/question.dart';
 
 enum PoliticalAnswer {
-  muyDeAcuerdo(label: "Muy de acuerdo"),
-  deAcuerdo(label: "De acuerdo"),
-  neutral(label: "Neutral"),
-  enDesacuerdo(label: "En desacuerdo"),
-  muyEnDesacuerdo(label: "Muy en desacuerdo");
+  muyDeAcuerdo(label: "Muy de acuerdo", value: 1),
+  deAcuerdo(label: "De acuerdo", value: 0.5),
+  neutral(label: "Neutral", value: 0),
+  enDesacuerdo(label: "En desacuerdo", value: -0.5),
+  muyEnDesacuerdo(label: "Muy en desacuerdo", value: -1);
 
   final String label;
-  const PoliticalAnswer({required this.label});
+  final double value;
+  const PoliticalAnswer({required this.label, required this.value});
 }
 
-// extension PoliticalAnswerLabel on PoliticalAnswer {
-//   String get label {
-//     switch (this) {
-//       case PoliticalAnswer.muyDeAcuerdo:
-//         return 'Muy de acuerdo';
-//       case PoliticalAnswer.deAcuerdo:
-//         return 'De acuerdo';
-//       case PoliticalAnswer.neutral:
-//         return 'Neutral';
-//       case PoliticalAnswer.enDesacuerdo:
-//         return 'En desacuerdo';
-//       case PoliticalAnswer.muyEnDesacuerdo:
-//         return 'Muy en desacuerdo';
-//     }
-//   }
-// }
-
-class QuestionScreen extends StatefulWidget {
+class QuestionScreen extends ConsumerStatefulWidget {
   const QuestionScreen({super.key});
 
   @override
-  State<QuestionScreen> createState() => _QuestionScreenState();
+  ConsumerState<QuestionScreen> createState() => _QuestionScreenState();
 }
 
-class _QuestionScreenState extends State<QuestionScreen> {
-  PoliticalAnswer? _selected;
+class _QuestionScreenState extends ConsumerState<QuestionScreen> {
   final AudioPlayer _musicPlayer = AudioPlayer();
 
-  int currentQuestion = 0;
-  List<Question> questionsList = <Question>[
-    Question(
-      question: "",
-      imageAssetPath: "",
-      questionType: QuestionType.economic,
-    ),
-  ];
+  int currentQuestionIndex = 0;
 
   final PageController _pageController = PageController();
-
+  final List<PoliticalAnswer?> _selectedAswersList = List.generate(
+    questionsList.length,
+    (index) => null,
+  );
   @override
   void initState() {
     playMusic();
@@ -86,11 +70,13 @@ class _QuestionScreenState extends State<QuestionScreen> {
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (value) {
-                  setState(() => currentQuestion = value);
+                  setState(() => currentQuestionIndex = value);
                 },
-                children: List.generate(
-                  questionsList.length,
-                  (index) => SingleChildScrollView(
+                children: List.generate(questionsList.length, (index) {
+                  PoliticalAnswer? currentSelectedAnswer =
+                      _selectedAswersList[index];
+
+                  return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
                     child: Column(
                       children: [
@@ -124,21 +110,80 @@ class _QuestionScreenState extends State<QuestionScreen> {
                         ...PoliticalAnswer.values.map(
                           (answer) => _AnswerOption(
                             label: answer.label,
-                            isSelected: _selected == answer,
-                            onTap: () => setState(() => _selected = answer),
+                            isSelected: currentSelectedAnswer == answer,
+                            onTap: () => setState(
+                              () => _selectedAswersList[index] = answer,
+                            ),
                           ),
                         ),
 
                         const SizedBox(height: 8),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                }),
               ),
             ),
 
             // ── Footer / Confirm button ──────────────────────────────
-            _Footer(enabled: _selected != null, onConfirm: () {}),
+            _Footer(
+              isFinishQuestion:
+                  currentQuestionIndex == questionsList.length - 1,
+              enabled: _selectedAswersList[currentQuestionIndex] != null,
+              onConfirm: () async {
+                //add answer value to user co
+                ref.read(userPositionProvider.notifier).update((state) {
+                  final currentQuestion = questionsList[currentQuestionIndex];
+                  final currentAnswer =
+                      _selectedAswersList[currentQuestionIndex]!;
+
+                  double addedValue =
+                      //multiply the value of the answer by the direction(1 or -1)
+                      (currentAnswer.value *
+                      currentQuestion
+                          .direction
+                          .value); // negative -1, 1 positive
+
+                  //is the axis is horizontal
+                  if (currentQuestion.questionAxis == QuestionAxis.horizontal) {
+                    double newX =
+                        //
+                        state.x + addedValue;
+
+                    return Point(newX, state.y);
+                  }
+                  //if the axis is vertical
+                  else {
+                    double newY =
+                        //
+                        state.y + addedValue;
+
+                    return Point(state.x, newY);
+                  }
+                });
+
+                //next page
+                await _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              onBack: () async {
+                await _pageController.previousPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+
+              onNext: _selectedAswersList[currentQuestionIndex] == null
+                  ? null
+                  : () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+            ),
           ],
         ),
       ),
@@ -156,7 +201,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
             children: [
               IconButton(onPressed: () {}, icon: Icon(Icons.pause)),
               Text(
-                'Pregunta ${currentQuestion + 1} de ${questionsList.length}',
+                'Pregunta ${currentQuestionIndex + 1} de ${questionsList.length}',
                 style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
               ),
               Padding(
@@ -206,7 +251,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
           SizedBox(height: 10),
           ////////////////////////////////////////////////////////
           LinearProgressIndicator(
-            value: currentQuestion / questionsList.length,
+            value: (currentQuestionIndex + 1) / questionsList.length,
             borderRadius: BorderRadius.circular(99),
             minHeight: 8,
             backgroundColor: const Color(0xFF334155),
@@ -298,38 +343,84 @@ class _AnswerOption extends StatelessWidget {
 class _Footer extends StatelessWidget {
   final bool enabled;
   final VoidCallback onConfirm;
-
-  const _Footer({required this.enabled, required this.onConfirm});
+  final VoidCallback? onBack;
+  final VoidCallback? onNext;
+  final bool isFinishQuestion;
+  final VoidCallback? onFinish;
+  const _Footer({
+    required this.enabled,
+    required this.onConfirm,
+    required this.onBack,
+    required this.onNext,
+    this.isFinishQuestion = false,
+    this.onFinish,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF1E293B),
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
       child: SizedBox(
         width: double.infinity,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          child: ElevatedButton(
-            onPressed: enabled ? onConfirm : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: enabled
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFF475569),
-              disabledBackgroundColor: const Color(0xFF475569),
-              foregroundColor: Colors.white,
-              disabledForegroundColor: const Color(0xFF94A3B8),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton(
+              onPressed: onBack,
+              child: Icon(Icons.arrow_back_ios),
+            ),
+            SizedBox(width: 8),
+
+            Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                child: ElevatedButton(
+                  onPressed: enabled ? onConfirm : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: enabled
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF475569),
+                    disabledBackgroundColor: const Color(0xFF475569),
+                    foregroundColor: Colors.white,
+                    disabledForegroundColor: const Color(0xFF94A3B8),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Confirmar respuesta',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
-              elevation: 0,
             ),
-            child: const Text(
-              'Confirmar respuesta',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            SizedBox(width: 8),
+
+            Visibility(
+              visible: enabled,
+              maintainSize: true,
+              maintainState: true,
+              maintainAnimation: true,
+              child: isFinishQuestion
+                  ? FilledButton(
+                      onPressed: onFinish,
+                      child: Icon(Icons.done_outline),
+                    )
+                  : OutlinedButton(
+                      onPressed: onNext,
+                      child: Icon(Icons.arrow_forward_ios),
+                    ),
             ),
-          ),
+          ],
         ),
       ),
     );
