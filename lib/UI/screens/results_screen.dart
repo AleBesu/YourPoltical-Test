@@ -12,7 +12,7 @@ class PoliticalResult {
   final double economicPosition; // -1.0 (izquierda) a 1.0 (derecha)
   final double economicMaxPosition;
 
-  final double authorityPosition; // -1.0 (liberal) a 1.0 (totalitario)
+  final double authorityPosition; // -1.0 (totalitario) a 1.0 (liberal)
   final double authorityMaxPosition;
   const PoliticalResult({
     required this.economicPosition,
@@ -317,6 +317,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             setState(() {
               isTakingScreenshot = true;
             });
+
             _resultsScreenshotController.capture().then((imageBytes) async {
               setState(() {
                 isTakingScreenshot = false;
@@ -470,7 +471,7 @@ class _PoliticalCompass extends StatelessWidget {
               (authorityPosition / authorityMaxPosition) *
                   -1, // es por -1 ya que en flutter los valores
               //positivos del eje Y van hacia abajo y yo uso convesionalmente
-              // los valores positivos hacia arriba
+              // los valores positivos hacia arriba(arriba liberal, abajo totalitario)
             ),
             child: _UserMarker(size: 28),
           ),

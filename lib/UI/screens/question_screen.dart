@@ -108,6 +108,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
             // ── Scrollable body ──────────────────────────────────────
             Expanded(
               child: PageView(
+                physics: const NeverScrollableScrollPhysics(),
                 controller: _pageController,
                 onPageChanged: (value) {
                   setState(() => currentQuestionIndex = value);
@@ -115,6 +116,8 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                 children: List.generate(questionsList.length, (index) {
                   PoliticalAnswer? currentSelectedAnswer =
                       _selectedAswersList[index];
+
+                  final currentQuestion = questionsList[currentQuestionIndex];
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
@@ -124,10 +127,27 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.asset(
-                            "assets/main_screen_wallpaper.png",
+                            currentQuestion.imageAssetPath,
                             height: 180,
                             width: double.infinity,
                             fit: BoxFit.cover,
+                            frameBuilder:
+                                (
+                                  context,
+                                  child,
+                                  frame,
+                                  wasSynchronouslyLoaded,
+                                ) {
+                                  if (wasSynchronouslyLoaded) {
+                                    return child;
+                                  }
+                                  return AnimatedOpacity(
+                                    opacity: frame == null ? 0 : 1,
+                                    duration: const Duration(milliseconds: 500),
+                                    curve: Curves.easeInOut,
+                                    child: child,
+                                  );
+                                },
                           ),
                         ),
 
@@ -135,7 +155,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
 
                         // Question
                         Text(
-                          "Esto es una pregunta",
+                          currentQuestion.question,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 16,
