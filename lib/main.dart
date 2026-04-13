@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: appTheme,
-      title: 'YourPoltical Test',
+      title: 'YourPolitical Test',
       debugShowCheckedModeBanner: false,
       home: MainScreen(),
     );

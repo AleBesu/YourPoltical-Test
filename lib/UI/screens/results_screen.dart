@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:your_political_test/UI/provider/user_name_provider.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/app/theme/app_colors.dart';
@@ -25,14 +28,14 @@ class PoliticalResult {
 class ResultsScreen extends StatefulWidget {
   final PoliticalResult result;
   final VoidCallback? onBack;
-  final VoidCallback? onShare;
+
   final VoidCallback? onRepeat;
 
   const ResultsScreen({
     super.key,
     required this.result,
     this.onBack,
-    this.onShare,
+
     this.onRepeat,
   });
 
@@ -42,6 +45,8 @@ class ResultsScreen extends StatefulWidget {
 
 class _ResultsScreenState extends State<ResultsScreen> {
   bool _showPoliticians = false;
+  bool isTakingScreenshot = false;
+  ScreenshotController _resultsScreenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
@@ -53,15 +58,90 @@ class _ResultsScreenState extends State<ResultsScreen> {
           children: [
             _buildHeader(),
             const SizedBox(height: 8),
-            _buildCompassCard(),
-            const SizedBox(height: 16),
-            _buildResultCard(),
+            _buildPoliticiansToggle(),
+            const SizedBox(height: 8),
+            Screenshot(
+              controller: _resultsScreenshotController,
+              child: Container(
+                padding: isTakingScreenshot
+                    ? const EdgeInsets.all(16)
+                    : const EdgeInsets.all(0),
+                decoration: isTakingScreenshot == false
+                    ? null
+                    : BoxDecoration(
+                        color: AppColors.primaryDark,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isTakingScreenshot) ...[
+                      Text(
+                        'Your Political Test',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                    ],
+
+                    _buildCompassCard(),
+                    const SizedBox(height: 16),
+                    _buildResultCard(),
+                  ],
+                ),
+              ),
+            ),
+
             const SizedBox(height: 24),
             _buildActionButtons(),
           ],
         ),
       ),
     );
+  }
+
+  String get economicResult {
+    final value = widget.result.economicPosition;
+
+    if (value >= 5) {
+      return 'Ultra-Derecha';
+    } else if (value >= 3) {
+      return 'Derecha';
+    } else if (value > 0.51) {
+      return 'Centro-Derecha';
+    } else if (value >= 0 || value < 0 && value >= -0.51) {
+      return 'Centro';
+    } else if (value <= -5) {
+      return 'Ultra-Izquierda';
+    } else if (value <= -3) {
+      return 'Izquierda';
+    } else if (value <= -0.51) {
+      return 'Centro-Izquierda';
+    } else {
+      throw Exception('Invalid economic position');
+    }
+  }
+
+  String get authorityResult {
+    final value = widget.result.authorityPosition;
+
+    if (value >= 5) {
+      return 'Liberal';
+    } else if (value >= 3) {
+      return 'Liberal-Moderado';
+    } else if (value > 0 || value < 0 && value >= -3) {
+      return 'Centro';
+    } else if (value <= -5) {
+      return 'Totalitario';
+    } else if (value < 0 && value <= -3) {
+      return 'Totalitario-Moderado';
+    } else {
+      throw Exception('Invalid economic position');
+    }
   }
 
   // ─── Encabezado ────────────────────────────────────────────────────────────
@@ -93,8 +173,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Widget _buildCompassCard() {
     return Column(
       children: [
-        _buildPoliticiansToggle(),
-        const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.maxWidth * 0.9;
@@ -159,7 +237,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             label: 'Orientación Económica',
             valueChildren: [
               Text(
-                "Centro-Izquierda",
+                economicResult,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -173,7 +251,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             label: 'Libertades Sociales',
             valueChildren: [
               Text(
-                "Liberal",
+                authorityResult,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -187,7 +265,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             label: 'Compatibilidad',
             valueChildren: [
               Text(
-                "Izquierda: ${(100 + ((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * 100).toStringAsFixed(2)}%",
+                "Izquierda: ${((((widget.result.economicPosition) / (widget.result.economicMaxPosition * -1)) * 100) * (widget.result.economicPosition > 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -196,7 +274,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "Derecha: ${(((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * -100).toStringAsFixed(2)}%",
+                "Derecha: ${((((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * 100) * (widget.result.economicPosition < 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -205,7 +283,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "Liberal: ${(100 - ((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * -100).toStringAsFixed(2)}%",
+                "Liberal: ${((((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * 100) * (widget.result.authorityPosition < 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -214,7 +292,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "Totalitario: ${(((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * -100).toStringAsFixed(2)}%",
+                "Totalitario: ${((((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * 100) * (widget.result.authorityPosition > 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -222,15 +300,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "Tu posición indica una tendencia hacia políticas económicas de centro-izquierda con valores sociales liberales. Apoyas la intervención estatal moderada y las libertades individuales.",
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textPrimary,
-              height: 1.6,
-            ),
           ),
         ],
       ),
@@ -245,7 +314,31 @@ class _ResultsScreenState extends State<ResultsScreen> {
       children: [
         ElevatedButton(
           onPressed: () {
-            widget.onShare?.call();
+            setState(() {
+              isTakingScreenshot = true;
+            });
+            _resultsScreenshotController.capture().then((imageBytes) async {
+              setState(() {
+                isTakingScreenshot = false;
+              });
+
+              if (imageBytes != null) {
+                //       final imageFile = await  File( '${(await getTemporaryDirectory()).path}/results.png').create() ;
+                //  await imageFile.writeAsBytes(imageBytes!);
+
+                await SharePlus.instance.share(
+                  ShareParams(
+                    files: [
+                      XFile.fromData(
+                        imageBytes,
+                        name: "results.png",
+                        mimeType: 'image/png',
+                      ),
+                    ],
+                  ),
+                );
+              }
+            });
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3B82F6),
