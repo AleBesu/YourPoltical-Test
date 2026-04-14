@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/core/adds/advertisements_service.dart';
+import 'package:your_political_test/main.dart';
 
 class RewardAddScreen extends StatefulWidget {
   final VoidCallback afterShowAdd;
@@ -15,15 +16,47 @@ class RewardAddScreen extends StatefulWidget {
 
 class _RewardAddScreenState extends State<RewardAddScreen> {
   bool isShowedAdd = false;
-
+  bool canPop = false;
   @override
   void initState() {
     Future.delayed(Duration(seconds: 2), () {
       changeText();
     });
+
     AdvertisementsService().showRewardAd(
       onAdFailedToShow: () {
+        setState(() {
+          canPop = true;
+        });
+
         Navigator.pop(context);
+        ScaffoldMessenger.of(navigatorKey!.currentState!.context).showSnackBar(
+          SnackBar(
+            margin: EdgeInsets.all(20),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+
+            content: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 13,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  "Comprueba tu conexion a internet",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
       },
       onEarnedReward: () {
         setState(() {
@@ -32,6 +65,7 @@ class _RewardAddScreenState extends State<RewardAddScreen> {
         widget.afterShowAdd();
       },
     );
+
     super.initState();
   }
 
@@ -51,7 +85,7 @@ class _RewardAddScreenState extends State<RewardAddScreen> {
 
   Future<void> changeText() async {
     await Future.delayed(Duration(seconds: Random().nextInt(3) + 1));
-    if (isShowedAdd) {
+    if (isShowedAdd || !mounted) {
       return;
     }
 
@@ -69,22 +103,25 @@ class _RewardAddScreenState extends State<RewardAddScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      body: Center(
-        child: SizedBox(
-          width: 250,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              const SizedBox(height: 10),
-              Text(
-                texts[currentTextIndex],
-                textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-            ],
+    return PopScope(
+      canPop: canPop,
+      child: CustomScaffold(
+        body: Center(
+          child: SizedBox(
+            width: 250,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                const SizedBox(height: 10),
+                Text(
+                  texts[currentTextIndex],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ],
+            ),
           ),
         ),
       ),

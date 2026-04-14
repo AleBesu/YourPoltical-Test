@@ -21,9 +21,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: appTheme,
+      navigatorKey: navigatorKey,
       title: 'YourPolitical Test',
       debugShowCheckedModeBanner: false,
       home: MainScreen(),
     );
   }
 }
+
+GlobalKey<NavigatorState>? navigatorKey = GlobalKey<NavigatorState>();

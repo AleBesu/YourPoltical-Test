@@ -96,7 +96,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             ),
 
             const SizedBox(height: 24),
-            if (widget.showActionsButtons) _buildActionButtons(),
+            _buildActionButtons(),
           ],
         ),
       ),
@@ -332,50 +332,53 @@ class _ResultsScreenState extends State<ResultsScreen> {
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => QuestionScreen()),
-              (route) => false,
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.repGreen.withValues(alpha: 0.8),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+
+        if (widget.showActionsButtons) ...[
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => QuestionScreen()),
+                (route) => false,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.repGreen.withValues(alpha: 0.8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
             ),
-            elevation: 0,
-          ),
-          child: const Text(
-            'Repetir Test',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-          ),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => MainScreen()),
-              (route) => false,
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            side: const BorderSide(color: Color(0xFFD1D5DB)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+            child: const Text(
+              'Repetir Test',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
           ),
-          child: const Text(
-            'Volver al Inicio',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => MainScreen()),
+                (route) => false,
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              side: const BorderSide(color: Color(0xFFD1D5DB)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Volver al Inicio',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

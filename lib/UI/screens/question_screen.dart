@@ -236,7 +236,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
 
                 await LocalDatabaseService.addNewResultToHistorial(result);
                 //show add
-                await navigator.pushAndRemoveUntil(
+                await navigator.push(
                   MaterialPageRoute(
                     builder: (_) => RewardAddScreen(
                       afterShowAdd: () {
@@ -250,7 +250,6 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                       },
                     ),
                   ),
-                  (route) => false,
                 );
               },
             ),
