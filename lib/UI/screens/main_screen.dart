@@ -3,7 +3,9 @@ import 'dart:math';
 
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:your_political_test/UI/screens/history_screen.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
+import 'package:your_political_test/UI/screens/widget/show_about_me.dart';
 import 'package:your_political_test/UI/screens/widget/show_name_form.dart';
 
 class MainScreen extends StatefulWidget {
@@ -254,13 +256,24 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           },
           child: Column(
             children: [
+              Container(
+                width: 90,
+                height: 90,
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Image.asset('assets/app_logo.png', fit: BoxFit.cover),
+              ),
+              SizedBox(height: 6),
               const Text(
-                'Your Political Test',
+                'Tu Test Político',
                 style: TextStyle(
                   fontFamily: 'Pacifico',
                   fontSize: 32,
                   color: Colors.white,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -358,17 +371,36 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildFooterButton(Icons.info_outline, 'Acerca de'),
+          _buildFooterButton(
+            Icons.info_outline,
+            'Acerca de',
+            onTap: () async {
+              await showAboutMe(context);
+            },
+          ),
           const SizedBox(width: 40),
-          _buildFooterButton(Icons.history, 'Historial'),
+          _buildFooterButton(
+            Icons.history,
+            'Historial',
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFooterButton(IconData icon, String label) {
+  Widget _buildFooterButton(
+    IconData icon,
+    String label, {
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         children: [
           Icon(icon, color: const Color(0xFF6B7280), size: 22),

@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:your_political_test/UI/provider/user_position_provider.dart';
+import 'package:your_political_test/UI/provider/user_name_provider.dart';
+
 import 'package:your_political_test/UI/screens/results_screen.dart';
+import 'package:your_political_test/UI/screens/reward_add_screen.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/core/const/questions_list.dart';
+import 'package:your_political_test/core/entities/political_result.dart';
 import 'package:your_political_test/core/entities/question.dart';
+import 'package:your_political_test/core/local_database_service/local_database_service.dart';
 
 enum PoliticalAnswer {
   muyDeAcuerdo(label: "Muy de acuerdo", value: 1),
@@ -30,6 +34,11 @@ class QuestionScreen extends ConsumerStatefulWidget {
 }
 
 class _QuestionScreenState extends ConsumerState<QuestionScreen> {
+  List<Point<double>> answerList = List.generate(
+    questionsList.length,
+    (index) => Point(0, 0),
+  );
+
   final AudioPlayer _musicPlayer = AudioPlayer();
 
   int currentQuestionIndex = 0;
@@ -60,34 +69,24 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
     });
   }
 
-  void addValueToUserPosition() {
-    //add answer value to user co
-    ref.read(userPositionProvider.notifier).update((state) {
-      final currentQuestion = questionsList[currentQuestionIndex];
-      final currentAnswer = _selectedAswersList[currentQuestionIndex]!;
+  void addAnswerToCurrentQuestion() {
+    final currentQuestion = questionsList[currentQuestionIndex];
+    final currentAnswer = _selectedAswersList[currentQuestionIndex]!;
 
-      double addedValue =
-          //multiply the value of the answer by the direction(1 or -1)
-          (currentAnswer.value *
-          currentQuestion.direction.value); // negative -1, 1 positive
+    double addedValue =
+        //multiply the value of the answer (1 -0,5 ect)
+        (currentAnswer.value *
+        currentQuestion.direction.value); // negative -1, 1 positive
 
-      //is the axis is horizontal
-      if (currentQuestion.questionAxis == QuestionAxis.horizontal) {
-        double newX =
-            //
-            state.x + addedValue;
-
-        return Point(newX, state.y);
-      }
-      //if the axis is vertical
-      else {
-        double newY =
-            //
-            state.y + addedValue;
-
-        return Point(state.x, newY);
-      }
-    });
+    //is the axis is horizontal
+    if (currentQuestion.questionAxis == QuestionAxis.horizontal) {
+      //add this answer to
+      answerList[currentQuestionIndex] = Point(addedValue, 0);
+    }
+    //if the axis is vertical
+    else {
+      answerList[currentQuestionIndex] = Point(0, addedValue);
+    }
   }
 
   @override
@@ -200,7 +199,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                       );
                     },
               onConfirm: () async {
-                addValueToUserPosition();
+                addAnswerToCurrentQuestion();
                 //next page
                 await _pageController.nextPage(
                   duration: const Duration(milliseconds: 300),
@@ -211,29 +210,47 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
               onNext: _selectedAswersList[currentQuestionIndex] == null
                   ? null
                   : () {
-                      addValueToUserPosition();
+                      addAnswerToCurrentQuestion();
                       _pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
                       );
                     },
-              onFinish: () {
+              onFinish: () async {
+                final navigator = Navigator.of(context);
+                addAnswerToCurrentQuestion();
+
                 _musicPlayer.pause();
 
-                double economicPosition = ref.read(userPositionProvider).x;
-                double authorityPosition = ref.read(userPositionProvider).y;
-                Navigator.pushReplacement(
-                  context,
+                Point<double> userPoint = answerList.reduce(
+                  (a, b) => Point(a.x + b.x, a.y + b.y),
+                );
+
+                final result = PoliticalResult(
+                  userName: ref.read(userNameProvider),
+                  economicPosition: userPoint.x,
+                  authorityPosition: userPoint.y,
+                  economicMaxPosition: 6,
+                  authorityMaxPosition: 6,
+                );
+
+                await LocalDatabaseService.addNewResultToHistorial(result);
+                //show add
+                await navigator.pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (_) => ResultsScreen(
-                      result: PoliticalResult(
-                        economicPosition: economicPosition,
-                        authorityPosition: authorityPosition,
-                        economicMaxPosition: 6,
-                        authorityMaxPosition: 6,
-                      ),
+                    builder: (_) => RewardAddScreen(
+                      afterShowAdd: () {
+                        //go to results
+                        navigator.pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (_) => ResultsScreen(result: result),
+                          ),
+                          (route) => false,
+                        );
+                      },
                     ),
                   ),
+                  (route) => false,
                 );
               },
             ),

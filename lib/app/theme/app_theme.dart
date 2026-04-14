@@ -33,6 +33,7 @@ ThemeData appTheme = ThemeData(
     style: ButtonStyle(
       foregroundColor: WidgetStatePropertyAll(Colors.white),
       backgroundColor: WidgetStatePropertyAll(AppColors.primaryBlue),
+
       shape: WidgetStatePropertyAll(
         RoundedRectangleBorder(
           borderRadius: BorderRadiusGeometry.circular(globalBorderRadius),
