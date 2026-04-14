@@ -9,6 +9,7 @@ import 'package:your_political_test/UI/provider/user_name_provider.dart';
 import 'package:your_political_test/UI/screens/results_screen.dart';
 import 'package:your_political_test/UI/screens/reward_add_screen.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
+import 'package:your_political_test/UI/screens/widget/show_pause_dialog.dart';
 import 'package:your_political_test/core/const/questions_list.dart';
 import 'package:your_political_test/core/entities/political_result.dart';
 import 'package:your_political_test/core/entities/question.dart';
@@ -91,169 +92,181 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      onPausedApp: () => setState(() {
-        _musicPlayer.pause();
-      }),
-      onResumedApp: () => setState(() {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        _musicPlayer.stop();
+
+        await showPauseDialog(context);
+
         _musicPlayer.play();
-      }),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ──────────────────────────────────────────────
-            _buildHeader(),
+      },
+      child: CustomScaffold(
+        onPausedApp: () => setState(() {
+          _musicPlayer.pause();
+        }),
+        onResumedApp: () => setState(() {
+          _musicPlayer.play();
+        }),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ──────────────────────────────────────────────
+              _buildHeader(),
 
-            // ── Scrollable body ──────────────────────────────────────
-            Expanded(
-              child: PageView(
-                physics: const NeverScrollableScrollPhysics(),
-                controller: _pageController,
-                onPageChanged: (value) {
-                  setState(() => currentQuestionIndex = value);
-                },
-                children: List.generate(questionsList.length, (index) {
-                  PoliticalAnswer? currentSelectedAnswer =
-                      _selectedAswersList[index];
+              // ── Scrollable body ──────────────────────────────────────
+              Expanded(
+                child: PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _pageController,
+                  onPageChanged: (value) {
+                    setState(() => currentQuestionIndex = value);
+                  },
+                  children: List.generate(questionsList.length, (index) {
+                    PoliticalAnswer? currentSelectedAnswer =
+                        _selectedAswersList[index];
 
-                  final currentQuestion = questionsList[currentQuestionIndex];
+                    final currentQuestion = questionsList[currentQuestionIndex];
 
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                    child: Column(
-                      children: [
-                        // Image
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            currentQuestion.imageAssetPath,
-                            height: 180,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            frameBuilder:
-                                (
-                                  context,
-                                  child,
-                                  frame,
-                                  wasSynchronouslyLoaded,
-                                ) {
-                                  if (wasSynchronouslyLoaded) {
-                                    return child;
-                                  }
-                                  return AnimatedOpacity(
-                                    opacity: frame == null ? 0 : 1,
-                                    duration: const Duration(milliseconds: 500),
-                                    curve: Curves.easeInOut,
-                                    child: child,
-                                  );
-                                },
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Question
-                        Text(
-                          currentQuestion.question,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            height: 1.5,
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Options
-                        ...PoliticalAnswer.values.map(
-                          (answer) => _AnswerOption(
-                            label: answer.label,
-                            isSelected: currentSelectedAnswer == answer,
-                            onTap: () => setState(
-                              () => _selectedAswersList[index] = answer,
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                      child: Column(
+                        children: [
+                          // Image
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              currentQuestion.imageAssetPath,
+                              height: 180,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              frameBuilder:
+                                  (
+                                    context,
+                                    child,
+                                    frame,
+                                    wasSynchronouslyLoaded,
+                                  ) {
+                                    if (wasSynchronouslyLoaded) {
+                                      return child;
+                                    }
+                                    return AnimatedOpacity(
+                                      opacity: frame == null ? 0 : 1,
+                                      duration: const Duration(
+                                        milliseconds: 500,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                      child: child,
+                                    );
+                                  },
                             ),
                           ),
-                        ),
 
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  );
-                }),
-              ),
-            ),
+                          const SizedBox(height: 24),
 
-            // ── Footer / Confirm button ──────────────────────────────
-            _Footer(
-              isFinishQuestion:
-                  currentQuestionIndex == questionsList.length - 1,
-              enabled: _selectedAswersList[currentQuestionIndex] != null,
-
-              onBack: currentQuestionIndex == 0
-                  ? null
-                  : () async {
-                      await _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-              onConfirm: () async {
-                addAnswerToCurrentQuestion();
-                //next page
-                await _pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-
-              onNext: _selectedAswersList[currentQuestionIndex] == null
-                  ? null
-                  : () {
-                      addAnswerToCurrentQuestion();
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-              onFinish: () async {
-                final navigator = Navigator.of(context);
-                addAnswerToCurrentQuestion();
-
-                _musicPlayer.pause();
-
-                Point<double> userPoint = answerList.reduce(
-                  (a, b) => Point(a.x + b.x, a.y + b.y),
-                );
-
-                final result = PoliticalResult(
-                  userName: ref.read(userNameProvider),
-                  economicPosition: userPoint.x,
-                  authorityPosition: userPoint.y,
-                  economicMaxPosition: 6,
-                  authorityMaxPosition: 6,
-                );
-
-                await LocalDatabaseService.addNewResultToHistorial(result);
-                //show add
-                await navigator.push(
-                  MaterialPageRoute(
-                    builder: (_) => RewardAddScreen(
-                      afterShowAdd: () {
-                        //go to results
-                        navigator.pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (_) => ResultsScreen(result: result),
+                          // Question
+                          Text(
+                            currentQuestion.question,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              height: 1.5,
+                            ),
                           ),
-                          (route) => false,
+
+                          const SizedBox(height: 24),
+
+                          // Options
+                          ...PoliticalAnswer.values.map(
+                            (answer) => _AnswerOption(
+                              label: answer.label,
+                              isSelected: currentSelectedAnswer == answer,
+                              onTap: () => setState(
+                                () => _selectedAswersList[index] = answer,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              ),
+
+              // ── Footer / Confirm button ──────────────────────────────
+              _Footer(
+                isFinishQuestion:
+                    currentQuestionIndex == questionsList.length - 1,
+                enabled: _selectedAswersList[currentQuestionIndex] != null,
+
+                onBack: currentQuestionIndex == 0
+                    ? null
+                    : () async {
+                        await _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
                         );
                       },
+                onConfirm: () async {
+                  addAnswerToCurrentQuestion();
+                  //next page
+                  await _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+
+                onNext: _selectedAswersList[currentQuestionIndex] == null
+                    ? null
+                    : () {
+                        addAnswerToCurrentQuestion();
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                onFinish: () async {
+                  final navigator = Navigator.of(context);
+                  addAnswerToCurrentQuestion();
+
+                  _musicPlayer.pause();
+
+                  Point<double> userPoint = answerList.reduce(
+                    (a, b) => Point(a.x + b.x, a.y + b.y),
+                  );
+
+                  final result = PoliticalResult(
+                    userName: ref.read(userNameProvider),
+                    economicPosition: userPoint.x,
+                    authorityPosition: userPoint.y,
+                    economicMaxPosition: 6,
+                    authorityMaxPosition: 6,
+                  );
+
+                  await LocalDatabaseService.addNewResultToHistorial(result);
+                  //show add
+                  await navigator.push(
+                    MaterialPageRoute(
+                      builder: (_) => RewardAddScreen(
+                        afterShowAdd: () {
+                          //go to results
+                          navigator.pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (_) => ResultsScreen(result: result),
+                            ),
+                            (route) => false,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -268,7 +281,15 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              IconButton(onPressed: () {}, icon: Icon(Icons.pause)),
+              IconButton(
+                onPressed: () async {
+                  //play/pause
+                  _musicPlayer.pause();
+                  await showPauseDialog(context);
+                  _musicPlayer.play();
+                },
+                icon: Icon(Icons.pause),
+              ),
               Text(
                 'Pregunta ${currentQuestionIndex + 1} de ${questionsList.length}',
                 style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),

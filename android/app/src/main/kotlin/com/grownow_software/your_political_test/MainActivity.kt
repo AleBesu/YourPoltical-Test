@@ -1,4 +1,4 @@
-package com.example.your_political_test
+package com.grownow_software.your_political_test
 
 import io.flutter.embedding.android.FlutterActivity
 
