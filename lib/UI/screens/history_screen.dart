@@ -4,6 +4,7 @@ import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/app/theme/app_colors.dart';
 import 'package:your_political_test/core/entities/political_result.dart';
 import 'package:your_political_test/core/local_database_service/local_database_service.dart';
+import 'package:your_political_test/l10n/app_localizations.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -13,10 +14,12 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
+  AppLocalizations get appLocalizations => AppLocalizations.of(context)!;
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      appBar: AppBar(title: Text("Historial")),
+      appBar: AppBar(title: Text(appLocalizations.history)),
       body: FutureBuilder(
         future: LocalDatabaseService.getTestListHistorial(),
         builder: (context, snapshot) {
@@ -38,7 +41,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Icon(Icons.layers_clear),
                   SizedBox(height: 4),
 
-                  Text('No hay resultados en el historial'),
+                  Text(appLocalizations.noHistory),
                 ],
               ),
             );
@@ -98,7 +101,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       );
                     },
                     child: Text(
-                      "Ver Resultado",
+                      appLocalizations.viewResult,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -115,7 +118,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: "Economía:",
+                    text: "${appLocalizations.economy} ",
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -138,7 +141,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               text: TextSpan(
                 children: [
                   TextSpan(
-                    text: "Libertad:",
+                    text: "${appLocalizations.freedom} ",
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -164,19 +167,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String getEconomicResult(double value) {
     if (value >= 5) {
-      return 'Ultra-Derecha';
+      return appLocalizations.ultraright;
     } else if (value >= 3) {
-      return 'Derecha';
+      return appLocalizations.right;
     } else if (value > 0.51) {
-      return 'Centro-Derecha';
+      return appLocalizations.centerright;
     } else if (value >= 0 || value < 0 && value >= -0.51) {
-      return 'Centro';
+      return appLocalizations.center;
     } else if (value <= -5) {
-      return 'Ultra-Izquierda';
+      return appLocalizations.ultraleft;
     } else if (value <= -3) {
-      return 'Izquierda';
+      return appLocalizations.left;
     } else if (value <= -0.51) {
-      return 'Centro-Izquierda';
+      return appLocalizations.centerleft;
     } else {
       throw Exception('Invalid economic position');
     }
@@ -184,15 +187,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String getAuthorityResult(double value) {
     if (value >= 5) {
-      return 'Liberal';
+      return appLocalizations.liberal;
     } else if (value >= 3) {
-      return 'Liberal-Moderado';
+      return appLocalizations.liberal;
     } else if (value >= 0 || value < 0 && value >= -3) {
-      return 'Centro';
+      return appLocalizations.center;
     } else if (value <= -5) {
-      return 'Totalitario';
+      return appLocalizations.authoritarian;
     } else if (value < 0 && value <= -3) {
-      return 'Totalitario-Moderado';
+      return appLocalizations.moderateauthoritarian;
     } else {
       throw Exception('Invalid economic position');
     }

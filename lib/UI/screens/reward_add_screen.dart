@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/core/adds/advertisements_service.dart';
+import 'package:your_political_test/l10n/app_localizations.dart';
 import 'package:your_political_test/main.dart';
 
 class RewardAddScreen extends StatefulWidget {
@@ -23,7 +24,14 @@ class _RewardAddScreenState extends State<RewardAddScreen> {
       changeText();
     });
 
-    AdvertisementsService().showRewardAd(
+    showAdd();
+
+    super.initState();
+  }
+
+  Future<void> showAdd() async {
+    await Future.delayed(Duration(seconds: 2));
+    bool isShow = await AdvertisementsService().showRewardAd(
       onAdFailedToShow: () {
         setState(() {
           canPop = true;
@@ -58,29 +66,31 @@ class _RewardAddScreenState extends State<RewardAddScreen> {
           ),
         );
       },
-      onEarnedReward: () {
-        setState(() {
-          isShowedAdd = true;
-        });
-        widget.afterShowAdd();
-      },
     );
 
-    super.initState();
+    setState(() {
+      isShowedAdd = isShow;
+    });
+    widget.afterShowAdd();
   }
 
-  List<String> texts = [
-    "Ejecutando análisis de compatibilidad ideológica…",
-    "Procesando datos de afinidad política…",
-    "Mapeando tu espectro político…",
-    "Construyendo tu perfil de pensamiento…",
-    "Sincronizando respuestas con el sistema…",
-    "Interpretando patrones de tus respuestas…",
-    "Calculando coherencia ideológica global…",
-    "Evaluando tendencias de posicionamiento…",
-    "Analizando correspondencias en el espectro político…",
-    "Generando mapa de afinidades políticas…",
-  ];
+  List<String> get texts {
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+
+    return [
+      appLocalizations.loading1,
+      appLocalizations.loading2,
+      appLocalizations.loading3,
+      appLocalizations.loading4,
+      appLocalizations.loading5,
+      appLocalizations.loading6,
+      appLocalizations.loading7,
+      appLocalizations.loading8,
+      appLocalizations.loading9,
+      appLocalizations.loading10,
+    ];
+  }
+
   int currentTextIndex = 0;
 
   Future<void> changeText() async {

@@ -7,6 +7,7 @@ import 'package:your_political_test/UI/screens/history_screen.dart';
 import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/UI/screens/widget/show_about_me.dart';
 import 'package:your_political_test/UI/screens/widget/show_name_form.dart';
+import 'package:your_political_test/l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,6 +17,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
+  AppLocalizations get appLocalizations => AppLocalizations.of(context)!;
   AudioPlayer _musicPlayer = AudioPlayer();
   late AnimationController _floatController;
   late AnimationController _pulseController;
@@ -267,8 +269,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 child: Image.asset('assets/app_logo.png', fit: BoxFit.cover),
               ),
               SizedBox(height: 6),
-              const Text(
-                'Tu Test Político',
+              Text(
+                AppLocalizations.of(context)!.politicaltest,
                 style: TextStyle(
                   fontFamily: 'Pacifico',
                   fontSize: 32,
@@ -283,10 +285,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         const SizedBox(height: 32),
 
         // Subtitle
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 32),
           child: Text(
-            'Descubre tu alineación política a través de cuestionarios interactivos basados en el test de Nolan',
+            appLocalizations.mainmenudescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Color(0xFFD1D5DB),
@@ -317,8 +319,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 elevation: 8,
                 shadowColor: const Color(0x402196F3),
               ),
-              child: const Text(
-                'COMENZAR TEST',
+              child: Text(
+                appLocalizations.starttest,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -335,10 +337,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildStat('12', 'Preguntas'),
+            _buildStat('12', '${appLocalizations.question}s'),
 
             const SizedBox(width: 20),
-            _buildStat('4', 'Direcciones'),
+            _buildStat('4', appLocalizations.directions),
           ],
         ),
       ],
@@ -373,7 +375,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         children: [
           _buildFooterButton(
             Icons.info_outline,
-            'Acerca de',
+            appLocalizations.about,
             onTap: () async {
               await showAboutMe(context);
             },
@@ -381,7 +383,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           const SizedBox(width: 40),
           _buildFooterButton(
             Icons.history,
-            'Historial',
+            appLocalizations.history,
             onTap: () async {
               await Navigator.push(
                 context,

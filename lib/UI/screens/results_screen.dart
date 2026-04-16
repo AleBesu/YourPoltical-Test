@@ -10,6 +10,7 @@ import 'package:your_political_test/UI/screens/widget/custom_scaffold.dart';
 import 'package:your_political_test/app/theme/app_colors.dart';
 import 'package:your_political_test/core/const/politicials_list.dart';
 import 'package:your_political_test/core/entities/political_result.dart';
+import 'package:your_political_test/l10n/app_localizations.dart';
 
 /// Pantalla reutilizable de resultados del test político.
 /// Toda la lógica (navegación, compartir, toggle) se delega
@@ -34,16 +35,19 @@ class ResultsScreen extends StatefulWidget {
 }
 
 class _ResultsScreenState extends State<ResultsScreen> {
+  AppLocalizations get appLocalizations => AppLocalizations.of(context)!;
   bool _showPoliticians = false;
   bool isTakingScreenshot = false;
   ScreenshotController _resultsScreenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
+
     return CustomScaffold(
       appBar: AppBar(
         title: Text(
-          'Tu Posición Política',
+          appLocalizations.apptitle,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
@@ -76,7 +80,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   children: [
                     if (isTakingScreenshot) ...[
                       Text(
-                        'Your Political Test',
+                        appLocalizations.politicaltest,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22,
@@ -107,19 +111,19 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final value = widget.result.economicPosition;
 
     if (value >= 5) {
-      return 'Ultra-Derecha';
+      return appLocalizations.ultraright;
     } else if (value >= 3) {
-      return 'Derecha';
+      return appLocalizations.right;
     } else if (value > 0.51) {
-      return 'Centro-Derecha';
+      return appLocalizations.centerright;
     } else if (value >= 0 || value < 0 && value >= -0.51) {
-      return 'Centro';
+      return appLocalizations.center;
     } else if (value <= -5) {
-      return 'Ultra-Izquierda';
+      return appLocalizations.ultraleft;
     } else if (value <= -3) {
-      return 'Izquierda';
+      return appLocalizations.left;
     } else if (value <= -0.51) {
-      return 'Centro-Izquierda';
+      return appLocalizations.centerleft;
     } else {
       throw Exception('Invalid economic position');
     }
@@ -129,15 +133,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final value = widget.result.authorityPosition;
 
     if (value >= 5) {
-      return 'Liberal';
+      return appLocalizations.liberal;
     } else if (value >= 3) {
-      return 'Liberal-Moderado';
+      return appLocalizations.liberal;
     } else if (value >= 0 || value < 0 && value >= -3) {
-      return 'Centro';
+      return appLocalizations.center;
     } else if (value <= -5) {
-      return 'Totalitario';
+      return appLocalizations.authoritarian;
     } else if (value < 0 && value <= -3) {
-      return 'Totalitario-Moderado';
+      return appLocalizations.moderateauthoritarian;
     } else {
       throw Exception('Invalid economic position');
     }
@@ -174,8 +178,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          'Mostrar políticos',
+        Text(
+          appLocalizations.showpoliticians,
           style: TextStyle(fontSize: 14, color: Colors.white),
         ),
         const SizedBox(width: 12),
@@ -201,8 +205,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tu Resultado',
+          Text(
+            appLocalizations.yourresult,
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
@@ -211,7 +215,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           ),
           const SizedBox(height: 16),
           _ResultRow(
-            label: 'Orientación Económica',
+            label: appLocalizations.economicorientation,
             valueChildren: [
               Text(
                 economicResult,
@@ -225,7 +229,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           ),
           const SizedBox(height: 12),
           _ResultRow(
-            label: 'Libertades Sociales',
+            label: appLocalizations.socialfreedoms,
             valueChildren: [
               Text(
                 authorityResult,
@@ -239,10 +243,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
           ),
           const SizedBox(height: 12),
           _ResultRow(
-            label: 'Compatibilidad',
+            label: appLocalizations.compatibility,
             valueChildren: [
               Text(
-                "Izquierda: ${((((widget.result.economicPosition) / (widget.result.economicMaxPosition * -1)) * 100) * (widget.result.economicPosition > 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
+                "${appLocalizations.left}: ${((((widget.result.economicPosition) / (widget.result.economicMaxPosition * -1)) * 100) * (widget.result.economicPosition > 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -251,7 +255,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "Derecha: ${((((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * 100) * (widget.result.economicPosition < 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
+                "${appLocalizations.right}: ${((((widget.result.economicPosition) / (widget.result.economicMaxPosition)) * 100) * (widget.result.economicPosition < 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -260,7 +264,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "Liberal: ${((((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * 100) * (widget.result.authorityPosition < 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
+                "${appLocalizations.liberal}: ${((((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * 100) * (widget.result.authorityPosition < 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -269,7 +273,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                "Totalitario: ${((((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * 100) * (widget.result.authorityPosition > 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
+                "${appLocalizations.authoritarian}: ${((((widget.result.authorityPosition) / (widget.result.authorityMaxPosition)) * 100) * (widget.result.authorityPosition > 0 ? 0 : 1)).abs().toStringAsFixed(2)}%",
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -327,8 +331,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
             ),
             elevation: 0,
           ),
-          child: const Text(
-            'Compartir Resultados',
+          child: Text(
+            appLocalizations.shareresults,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ),
@@ -352,8 +356,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Repetir Test',
+            child: Text(
+              appLocalizations.repeattest,
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
           ),
@@ -373,8 +377,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
-              'Volver al Inicio',
+            child: Text(
+              appLocalizations.backhome,
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
           ),
@@ -407,6 +411,8 @@ class _PoliticalCompass extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = AppLocalizations.of(context)!;
+
     return Stack(
       children: [
         // Cuadrantes
@@ -422,7 +428,7 @@ class _PoliticalCompass extends ConsumerWidget {
                   children: [
                     _Quadrant(
                       color: AppColors.repGreen.withValues(alpha: 0.8),
-                      label: 'Liberal\nIzquierda',
+                      label: appLocalizations.liberalleft,
                       textColor: const Color(0xFFDCFCE7),
                       borderRight: true,
                       borderBottom: true,
@@ -432,7 +438,7 @@ class _PoliticalCompass extends ConsumerWidget {
                     ),
                     _Quadrant(
                       color: AppColors.repBlue.withValues(alpha: 0.8),
-                      label: 'Liberal\nDerecha',
+                      label: appLocalizations.liberalright,
                       textColor: const Color(0xFFDBEAFE),
                       borderBottom: true,
                       borderRadius: const BorderRadius.only(
@@ -447,7 +453,7 @@ class _PoliticalCompass extends ConsumerWidget {
                   children: [
                     _Quadrant(
                       color: AppColors.repRed.withValues(alpha: 0.8),
-                      label: 'Totalitario\nIzquierda',
+                      label: appLocalizations.authoritarianleft,
                       textColor: const Color(0xFFFEE2E2),
                       borderRight: true,
                       borderRadius: const BorderRadius.only(
@@ -456,7 +462,7 @@ class _PoliticalCompass extends ConsumerWidget {
                     ),
                     _Quadrant(
                       color: AppColors.repPurple.withValues(alpha: 0.8),
-                      label: 'Totalitario\nDerecha',
+                      label: appLocalizations.authoritarianright,
                       textColor: const Color(0xFFF3E8FF),
                       borderRadius: const BorderRadius.only(
                         bottomRight: Radius.circular(12),

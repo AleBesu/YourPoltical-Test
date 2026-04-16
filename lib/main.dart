@@ -7,6 +7,7 @@ import 'package:your_political_test/UI/screens/main_screen.dart';
 
 import 'package:your_political_test/app/theme/app_theme.dart';
 import 'package:your_political_test/core/local_database_service/local_database_service.dart';
+import 'package:your_political_test/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,9 +23,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: const [Locale('en'), Locale('es')],
       theme: appTheme,
       navigatorKey: navigatorKey,
-      title: 'YourPolitical Test',
+      title: 'Political Test',
       debugShowCheckedModeBanner: false,
       home: MainScreen(),
     );

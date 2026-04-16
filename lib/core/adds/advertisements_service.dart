@@ -16,10 +16,14 @@ class AdvertisementsService {
 
   RewardedAd? _rewardedAd;
 
-  Future<void> showRewardAd({
+  Future<bool> showRewardAd({
     VoidCallback? onEarnedReward,
     VoidCallback? onAdFailedToShow,
   }) async {
+    bool isShow = false;
+
+    final completer = Completer<bool>();
+
     await RewardedAd.load(
       adUnitId: "ca-app-pub-1385818206803822/7117946458",
       request: AdRequest(),
@@ -33,16 +37,25 @@ class AdvertisementsService {
           await _rewardedAd!.show(
             onUserEarnedReward: (ad, reward) {
               onEarnedReward?.call();
-              ad.dispose();
             },
           );
+
+          completer.complete(true);
         },
 
         onAdFailedToLoad: (error) {
+          //there is not adds to show
+          if (error.code == 3) {
+            completer.complete(true);
+            return;
+          }
+
           onAdFailedToShow?.call();
         },
       ),
     );
+
+    return completer.future;
   }
 }
 

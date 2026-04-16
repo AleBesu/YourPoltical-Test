@@ -14,17 +14,35 @@ import 'package:your_political_test/core/const/questions_list.dart';
 import 'package:your_political_test/core/entities/political_result.dart';
 import 'package:your_political_test/core/entities/question.dart';
 import 'package:your_political_test/core/local_database_service/local_database_service.dart';
+import 'package:your_political_test/l10n/app_localizations.dart';
 
 enum PoliticalAnswer {
-  muyDeAcuerdo(label: "Muy de acuerdo", value: 1),
-  deAcuerdo(label: "De acuerdo", value: 0.5),
-  neutral(label: "Neutral", value: 0),
-  enDesacuerdo(label: "En desacuerdo", value: -0.5),
-  muyEnDesacuerdo(label: "Muy en desacuerdo", value: -1);
+  muyDeAcuerdo(value: 1),
+  deAcuerdo(value: 0.5),
+  neutral(value: 0),
+  enDesacuerdo(value: -0.5),
+  muyEnDesacuerdo(value: -1);
 
-  final String label;
   final double value;
-  const PoliticalAnswer({required this.label, required this.value});
+  const PoliticalAnswer({required this.value});
+}
+
+extension PoliticalAnswerExtension on PoliticalAnswer {
+  static String label(BuildContext context, PoliticalAnswer value) {
+    final appLocalizations = AppLocalizations.of(context)!;
+    switch (value) {
+      case PoliticalAnswer.muyDeAcuerdo:
+        return appLocalizations.stronglyagree;
+      case PoliticalAnswer.deAcuerdo:
+        return appLocalizations.agree;
+      case PoliticalAnswer.neutral:
+        return appLocalizations.neutral;
+      case PoliticalAnswer.enDesacuerdo:
+        return appLocalizations.disagree;
+      case PoliticalAnswer.muyEnDesacuerdo:
+        return appLocalizations.stronglydisagree;
+    }
+  }
 }
 
 class QuestionScreen extends ConsumerStatefulWidget {
@@ -35,22 +53,28 @@ class QuestionScreen extends ConsumerStatefulWidget {
 }
 
 class _QuestionScreenState extends ConsumerState<QuestionScreen> {
-  List<Point<double>> answerList = List.generate(
-    questionsList.length,
-    (index) => Point(0, 0),
-  );
+  List<Point<double>> answerList = [];
 
   final AudioPlayer _musicPlayer = AudioPlayer();
 
   int currentQuestionIndex = 0;
 
   final PageController _pageController = PageController();
-  final List<PoliticalAnswer?> _selectedAswersList = List.generate(
-    questionsList.length,
-    (index) => null,
-  );
+  List<PoliticalAnswer?> _selectedAswersList = List.filled(12, null);
   @override
   void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      answerList = List.generate(
+        questionsList(context).length,
+        (index) => Point(0, 0),
+      );
+
+      _selectedAswersList = List.generate(
+        questionsList(context).length,
+        (index) => null,
+      );
+    });
+
     playMusic();
     super.initState();
   }
@@ -71,7 +95,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
   }
 
   void addAnswerToCurrentQuestion() {
-    final currentQuestion = questionsList[currentQuestionIndex];
+    final currentQuestion = questionsList(context)[currentQuestionIndex];
     final currentAnswer = _selectedAswersList[currentQuestionIndex]!;
 
     double addedValue =
@@ -122,11 +146,15 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                   onPageChanged: (value) {
                     setState(() => currentQuestionIndex = value);
                   },
-                  children: List.generate(questionsList.length, (index) {
+                  children: List.generate(questionsList(context).length, (
+                    index,
+                  ) {
                     PoliticalAnswer? currentSelectedAnswer =
                         _selectedAswersList[index];
 
-                    final currentQuestion = questionsList[currentQuestionIndex];
+                    final currentQuestion = questionsList(
+                      context,
+                    )[currentQuestionIndex];
 
                     return SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
@@ -180,7 +208,10 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                           // Options
                           ...PoliticalAnswer.values.map(
                             (answer) => _AnswerOption(
-                              label: answer.label,
+                              label: PoliticalAnswerExtension.label(
+                                context,
+                                answer,
+                              ),
                               isSelected: currentSelectedAnswer == answer,
                               onTap: () => setState(
                                 () => _selectedAswersList[index] = answer,
@@ -199,7 +230,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
               // ── Footer / Confirm button ──────────────────────────────
               _Footer(
                 isFinishQuestion:
-                    currentQuestionIndex == questionsList.length - 1,
+                    currentQuestionIndex == questionsList(context).length - 1,
                 enabled: _selectedAswersList[currentQuestionIndex] != null,
 
                 onBack: currentQuestionIndex == 0
@@ -291,7 +322,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                 icon: Icon(Icons.pause),
               ),
               Text(
-                'Pregunta ${currentQuestionIndex + 1} de ${questionsList.length}',
+                '${AppLocalizations.of(context)!.question} ${currentQuestionIndex + 1} - ${questionsList(context).length}',
                 style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
               ),
               Padding(
@@ -341,7 +372,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
           SizedBox(height: 10),
           ////////////////////////////////////////////////////////
           LinearProgressIndicator(
-            value: (currentQuestionIndex + 1) / questionsList.length,
+            value: (currentQuestionIndex + 1) / questionsList(context).length,
             borderRadius: BorderRadius.circular(99),
             minHeight: 8,
             backgroundColor: const Color(0xFF334155),
@@ -496,8 +527,8 @@ class _Footer extends StatelessWidget {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Confirmar respuesta',
+                  child: Text(
+                    AppLocalizations.of(context)!.submit,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),

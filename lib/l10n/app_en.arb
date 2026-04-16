@@ -1,0 +1,103 @@
+{
+  "@@locale": "en",
+  "helloworld": "helloWorld",
+  "welcomemessage": "welcomeMessage",
+  "politicaltest": "Political Test",
+  "mainmenudescription": "Discover your political alignment through interactive quizzes based on the Nolan Test.",
+  "directions": "Directions",
+  "questions": "Questions",
+  "history": "History",
+  "about": "About",
+  "starttest": "Start Test",
+  "cancel": "Cancel",
+  "submit": "Submit",
+  "stronglyagree": "Strongly agree",
+  "agree": "Agree",
+  "neutral": "Neutral",
+  "disagree": "Disagree",
+  "stronglydisagree": "Strongly disagree",
+ "question": "Question",
+  "mainmenu": "Main Menu",
+  "pause": "Pause",
+  "continuar": "Continue",
+  "question1": "Should the government ban extreme political or religious opinions to maintain social order?",
+  "question2": "Should compulsory military service be abolished and only a professional volunteer army be maintained?",
+  "question3": "Should consensual sexual acts between people of the same sex be legalized without state interference?",
+  "question4": "Should the use and sale of substances (such as marijuana) be permitted under adult responsibility, rather than being a criminal matter?",
+  "question5": "Should the State be entirely secular and not grant privileges or public funds to any religious institution?",
+  "question6": "Should people have the freedom to cross borders and work, as long as they do not have a criminal record?",
+  "question7": "Should taxes be drastically reduced so that people have a larger share of their income available?",
+  "question8": "Should the government reduce social spending and subsidies to balance the budget and lower debt?",
+  "question9": "Should price and wage controls be eliminated so that the market can determine them freely?",
+  "question10": "Should sectors such as mail, electricity, or transport be moved into private hands instead of being managed by the State?",
+  "question11": "Should free trade be allowed without tariffs or quotas that artificially protect national industry?",
+  "question12": "Should charitable organizations and the private sector take over social welfare instead of mandatory government programs?",
+
+  "loading1": "Executing ideological compatibility analysis…",
+  "loading2": "Processing political affinity data…",
+  "loading3": "Mapping your political spectrum…",
+  "loading4": "Building your thought profile…",
+  "loading5": "Synchronizing responses with the system…",
+  "loading6": "Interpreting patterns from your responses…",
+  "loading7": "Calculating global ideological consistency…",
+  "loading8": "Evaluating positioning trends…",
+  "loading9": "Analyzing matches across the political spectrum…",
+  "loading10": "Generating political affinity map…",
+
+  "apptitle": "Your Political Position",
+  "yourpoliticaltest": "Your Political Test",
+  "showpoliticians": "Show politicians",
+  "yourresult": "Your Result",
+  "economicorientation": "Economic Orientation",
+  "socialfreedoms": "Social Freedoms",
+  "compatibility": "Compatibility",
+
+  "ultraright": "Far Right",
+  "right": "Right",
+  "centerright": "Center-Right",
+  "center": "Center",
+  "centerleft": "Center-Left",
+  "left": "Left",
+  "ultraleft": "Far Left",
+
+  "liberal": "Liberal",
+  "moderateliberal": "Moderate Liberal",
+  "authoritarian": "Authoritarian",
+  "moderateauthoritarian": "Moderate Authoritarian",
+
+  "economicleft": "Left",
+  "economicright": "Right",
+  "liberallabel": "Liberal",
+  "authoritarianlabel": "Authoritarian",
+
+  "shareresults": "Share Results",
+  "repeattest": "Retake Test",
+  "backhome": "Back to Home",
+
+  "liberalleft": "Liberal\nLeft",
+  "liberalright": "Liberal\nRight",
+  "authoritarianleft": "Authoritarian\nLeft",
+  "authoritarianright": "Authoritarian\nRight",
+
+  "invalidposition": "Invalid position",
+  
+  "loading": "Loading...",
+  "noHistory": "No results in history",
+  "viewResult": "View Result",
+
+  "economy": "Economy:",
+  "freedom": "Freedom:",
+
+  "ultraRight": "Far Right",
+
+  "centerRight": "Center-Right",
+  
+  "centerLeft": "Center-Left",
+
+  "ultraLeft": "Far Left",
+
+
+  "moderateLiberal": "Moderate Liberal",
+ 
+  "moderateAuthoritarian": "Moderate Authoritarian"
+}
